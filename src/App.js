@@ -1,19 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TransactionForm from "./components/TransactionForm";
 import TransactionList from "./components/TransactionList";
 import "./App.css";
 
 function App() {
-  const [transactions, setTransactions] = useState([]);
+  const [transactions, setTransactions] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("expense-tracker-v1") || "[]");
+      return Array.isArray(saved) ? saved.filter(tx => tx && (typeof tx.id === "string" || typeof tx.id === "number") && typeof tx.text === "string" && Number.isFinite(tx.amount) && tx.amount !== 0) : [];
+    } catch { return []; }
+  });
+
+  const [storageError, setStorageError] = useState("");
+  useEffect(() => {
+    try { localStorage.setItem("expense-tracker-v1", JSON.stringify(transactions)); setStorageError(""); }
+    catch { setStorageError("Changes could not be saved in this browser. Keep this tab open to retain them."); }
+  }, [transactions]);
 
   // Add transaction
   const addTransaction = (transaction) => {
-    setTransactions([transaction, ...transactions]);
+    setTransactions(current => [transaction, ...current]);
   };
 
   // Delete transaction
   const deleteTransaction = (id) => {
-    setTransactions(transactions.filter(transaction => transaction.id !== id));
+    setTransactions(current => current.filter(transaction => transaction.id !== id));
 };
 
 
@@ -32,6 +43,7 @@ function App() {
   return (
     <div className="container">
       <h2>💸 Expense Tracker</h2>
+      {storageError && <p role="alert">{storageError}</p>}
       <h3>Your Balance: ₹{balance.toFixed(2)}</h3>
 
       <div className="income-expense">
