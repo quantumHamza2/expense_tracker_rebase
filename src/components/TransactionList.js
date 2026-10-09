@@ -15,7 +15,13 @@ const TransactionList = ({ transactions, deleteTransaction }) => {
             </div>
             <div className="amount-delete">
               <span>₹{Math.abs(transaction.amount)}</span>
-              <button onClick={() => deleteTransaction(transaction.id)}>✖️</button>
+              <button
+                type="button"
+                aria-label={`Delete transaction: ${transaction.text}`}
+                onClick={() => deleteTransaction(transaction.id)}
+              >
+                <span aria-hidden="true">✖️</span>
+              </button>
             </div>
           </li>
         ))}
@@ -25,4 +31,3 @@ const TransactionList = ({ transactions, deleteTransaction }) => {
 };
 
 export default TransactionList;
-

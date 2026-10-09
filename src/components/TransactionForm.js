@@ -1,18 +1,24 @@
 import React, { useState } from 'react';
 
 const TransactionForm = ({ addTransaction }) => {
+  const [error, setError] = useState('');
   const [text, setText] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('General');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!text || !amount) return;
+    const parsed = Number(amount);
+    if (!text.trim() || !Number.isFinite(parsed) || parsed === 0 || !Number.isSafeInteger(Math.round(parsed * 100))) {
+      setError('Enter a description and a non-zero amount with up to two decimal places.');
+      return;
+    }
+    setError('');
 
     const newTransaction = {
-      id: Date.now(),
-      text,
-      amount: +amount,
+      id: crypto.randomUUID(),
+      text: text.trim(),
+      amount: Math.round(parsed * 100) / 100,
       category,
     };
 
@@ -24,9 +30,10 @@ const TransactionForm = ({ addTransaction }) => {
 
   return (
     <form onSubmit={handleSubmit}>
+      {error && <p role="alert">{error}</p>}
       <div style={{ marginBottom: '15px' }}>
-        <label>Category</label>
-        <select
+        <label htmlFor="category">Category</label>
+        <select id="category"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           className="form-input"
@@ -40,8 +47,10 @@ const TransactionForm = ({ addTransaction }) => {
       </div>
 
       <div>
-        <label>Transaction</label>
+        <label htmlFor="description">Transaction</label>
         <input
+          id="description"
+          required
           type="text"
           placeholder="Enter text..."
           value={text}
@@ -50,8 +59,11 @@ const TransactionForm = ({ addTransaction }) => {
       </div>
 
       <div>
-        <label>Amount (negative - expense, positive - income)</label>
+        <label htmlFor="amount">Amount (negative - expense, positive - income)</label>
         <input
+          id="amount"
+          required
+          step="0.01"
           type="number"
           placeholder="Enter amount..."
           value={amount}
